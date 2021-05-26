@@ -1,5 +1,7 @@
 ﻿using dotNetCore5API_CRUD.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +51,8 @@ namespace dotNetCore5API_CRUD.Controllers
 
         // POST api/<EmployeeController>
         [HttpPost]
-        public ActionResult<Employee> Post([FromBody] Employee value, int Gender)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public IActionResult Post([FromBody] Employee value, int Gender)
         {
             try
             {
@@ -82,7 +85,7 @@ namespace dotNetCore5API_CRUD.Controllers
                 _db.Employees.Add(value);
                 _db.SaveChanges();
 
-                return CreatedAtAction(nameof(Get), new { id = value.EmpId }, value);
+                return Ok(value);/* CreatedAtAction(nameof(Get),new { id = value.EmpId }, value);*/
             }
             catch (Exception ex)
             {
@@ -93,8 +96,27 @@ namespace dotNetCore5API_CRUD.Controllers
 
         // PUT api/<EmployeeController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put([FromBody] Employee value)
         {
+
+            _db.Entry(value).State = EntityState.Modified;
+
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (!_db.Employees.Any(x => x.EmpId == value.EmpId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return StatusCode(500, "Update Error");
+                }
+            }
+            return NoContent();
         }
 
         // DELETE api/<EmployeeController>/5
