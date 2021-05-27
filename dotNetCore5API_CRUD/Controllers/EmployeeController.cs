@@ -121,8 +121,17 @@ namespace dotNetCore5API_CRUD.Controllers
 
         // DELETE api/<EmployeeController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(string id)
         {
+            var d = _db.Employees.Find(id);
+            if (d == null)
+            {
+                return NotFound();
+            }
+
+            _db.Employees.Remove(d);
+            _db.SaveChanges();
+            return NoContent();
         }
 
 
